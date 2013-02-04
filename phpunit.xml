@@ -1,0 +1,8 @@
+<phpunit bootstrap="vendor/autoload.php" colors="true" verbose="true">
+	<testsuites>
+		<testsuite name="Cog Test Suite">
+			<directory>tests/</directory>
+			<exclude>tests/classes</exclude>
+		</testsuite>
+	</testsuites>
+</phpunit>
