@@ -24,6 +24,14 @@ class Request
 		$this->environment = $environment;
 	}
 
+	/**
+	 * @return array  The environment variables
+	 */
+	public function environment()
+	{
+		return $this->environment;
+	}
+
 	public function body(){}
 
 	public function script_name(){}

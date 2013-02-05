@@ -30,6 +30,7 @@ class Builder
 	 */
 	public function __construct($environment, $options = array())
 	{
+		$environment = new \Cog\Environment($environment);
 		$this->request = new \Cog\Request($environment);
 		$this->options = $options;
 	}
