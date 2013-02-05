@@ -10,7 +10,7 @@ namespace Cog;
 class Request
 {
 	/**
-	 * @var array  The environment variables ($_SERVER)
+	 * @var array|ArrayAccess  Environment variables
 	 */
 	private $environment;
 
@@ -25,7 +25,7 @@ class Request
 	}
 
 	/**
-	 * @return array  The environment variables
+	 * @return array|ArrayAccess  The environment variables
 	 */
 	public function environment()
 	{

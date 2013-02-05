@@ -1,7 +1,7 @@
 <?php
 
-include 'classes/App.php';
-include 'classes/HelloWorld.php';
+include_once 'classes/App.php';
+include_once 'classes/HelloWorld.php';
 
 class BuilderTest extends PHPUnit_Framework_TestCase
 {
