@@ -2,7 +2,6 @@
 
 include 'classes/App.php';
 include 'classes/HelloWorld.php';
-include 'classes/Api.php';
 
 class BuilderTest extends PHPUnit_Framework_TestCase
 {
