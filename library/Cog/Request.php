@@ -65,7 +65,13 @@ class Request
 	 */
 	public function scriptName()
 	{
-		return $this->environment->param('SCRIPT_NAME', '');
+		$name = $this->environment->param('SCRIPT_NAME', '');
+		if ($name !== '')
+		{
+			$name = '/' . \ltrim($name, '/');
+		}
+
+		return $name;
 	}
 
 	/**
@@ -73,7 +79,13 @@ class Request
 	 */
 	public function pathInfo()
 	{
-		return $this->environment->param('PATH_INFO', '');
+		$path = $this->environment->param('PATH_INFO', '');
+		if ($path !== '')
+		{
+			$path = '/' . \ltrim($path, '/');
+		}
+
+		return $path;
 	}
 
 	/**
@@ -109,12 +121,12 @@ class Request
 	}
 
 	/**
-	 * @return string
+	 * @return array
 	 */
 	public function mediaType()
 	{
 		list($type) = \explode(";", $this->contentType());
-		return \current(\explode(',', $type));
+		return \explode(',', $type);
 	}
 
 	/**
@@ -122,14 +134,27 @@ class Request
 	 */
 	public function mediaTypeParams()
 	{
-		list($media) = \explode(':', $this->contentType());
+		$media = \explode(';', $this->contentType());
 		\array_shift($media);
 
 		$params = array();
-		foreach ($meda as $item)
+		foreach ($media as $item)
 		{
 			list($key, $value) = \explode('=', $item);
-			$params[$key] = $value;
+
+			if (\array_key_exists($key, $params))
+			{
+				if ( ! \is_array($params[$key]))
+				{
+					$params[$key] = array($params[$key]);
+				}
+
+				$params[$key][] = $value;
+			}
+			else
+			{
+				$params[$key] = $value;
+			}
 		}
 
 		return $params;
@@ -159,7 +184,7 @@ class Request
 	 */
 	public function scheme()
 	{
-		return $this->environment->param('cog.scheme');
+		return $this->environment->param('cog.url_scheme');
 	}
 
 	/**
@@ -167,7 +192,7 @@ class Request
 	 */
 	public function port()
 	{
-		return (int) $this->environment->param('SERVER_POST', 80);
+		return (int) $this->environment->param('SERVER_PORT', 80);
 	}
 
 	/**
@@ -204,7 +229,7 @@ class Request
 		$cookie_string = $this->environment->param('HTTP_COOKIE', '');
 		if ( ! empty($cookie_string))
 		{
-			foreach (\explode(';', $cookie_string) as $item)
+			foreach (\explode('; ', $cookie_string) as $item)
 			{
 				list($key, $value) = \explode('=', $item);
 				$cookies[$key] = \urldecode($value);
@@ -219,12 +244,11 @@ class Request
 	 */
 	public function baseUrl()
 	{
-		$url = $this->scheme().':'.$this->host();
-		$port = $this->port();
+		$url = $this->scheme().'://'.$this->host();
 
-		if ($port !== 80 || $port !== 443)
+		if ( ! in_array($this->port(), array(80, 443)))
 		{
-			$url .= ':'.$port;
+			$url .= ':'.$this->port();
 		}
 
 		return $url;
@@ -253,6 +277,7 @@ class Request
 	{
 		$path = $this->path();
 		$query = $this->queryString();
+
 		if ( ! empty($query))
 		{
 			$path .= "?".$query;
@@ -284,7 +309,7 @@ class Request
 	 */
 	public function isSSL()
 	{
-		return $this->scheme === 'https';
+		return $this->scheme() === 'https';
 	}
 
 	/**
