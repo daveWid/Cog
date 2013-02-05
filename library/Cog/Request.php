@@ -29,9 +29,17 @@ class Request
 	 */
 	private $params;
 
+	/**
+	 * @param array|\Cog\Environment $environment The request environment variables
+	 */
 	public function __construct($environment)
 	{
+		if ( ! $environment instanceof \Cog\Environment)
+		{
+			$environment = new \Cog\Environment($environment);
+		}
 		$this->environment = $environment;
+
 		\parse_str($this->queryString(), $this->get);
 		\parse_str($this->environment->param('cog.input'), $this->post);
 	}
