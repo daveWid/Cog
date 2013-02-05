@@ -8,7 +8,7 @@ class MockServer
 		'HTTP_ACCEPT' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8;charset=utf-8',
 		'HTTP_ACCEPT_LANGUAGE' => 'en-US,en;q=0.5',
 		'HTTP_ACCEPT_ENCODING' => 'gzip, deflate',
-		'HTTP_COOKIE' => 'testing=true;foo=bar',
+		'HTTP_COOKIE' => 'testing=true; foo=bar',
 		'HTTP_CONNECTION' => 'keep-alive',
 		'HTTP_CACHE_CONTROL' => 'max-age=0',
 		'PATH' => '/usr/local/bin:/usr/bin:/bin',
@@ -41,8 +41,16 @@ class MockServer
 	}
 
 	/**
-	 * A GET Request with query params.
-	 *
+	 * @return \Cog\Environment  A "mock" get request.
+	 */
+	public static function port()
+	{
+		$data = self::$request;
+		$data['SERVER_PORT'] = 81;
+		return new \Cog\Environment($data);
+	}
+
+	/**
 	 * @return \Cog\Environment
 	 */
 	public static function getWithQuery()
@@ -63,6 +71,17 @@ class MockServer
 	{
 		$data = self::$request;
 		$data['HTTPS'] = "on";
+
+		return new \Cog\Environment($data);
+	}
+
+	/**
+	 * @return \Cog\Environment
+	 */
+	public static function xhr()
+	{
+		$data = self::$request;
+		$data['HTTP_X_REQUESTED_WITH'] = "XMLHttpRequest";
 
 		return new \Cog\Environment($data);
 	}
