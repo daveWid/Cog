@@ -9,14 +9,31 @@ namespace Cog;
  */
 class Response implements \ArrayAccess
 {
+	/**
+	 * @var int  The body length
+	 */
 	protected $length = 0;
 
+	/**
+	 * @var string  The response body
+	 */
 	private $body;
 
-	private $status;
+	/**
+	 * @var int  Defaults to 200 (good response)
+	 */
+	private $status = 200;
 
-	private $headers;
+	/**
+	 * @var array   The response headers
+	 */
+	private $headers = array();
 
+	/**
+	 * @param  string $content  Body content. Overwrites the current content.
+	 * @return string           The body content (get)
+	 * @return \Cog\Response    $this (set)
+	 */
 	public function body($content = null)
 	{
 		if ($content === null)
@@ -26,19 +43,88 @@ class Response implements \ArrayAccess
 
 		$this->body = "";
 		$this->write($content);
+		return $this;
 	}
 
+	/**
+	 * @param  string $str Content to append to the body
+	 */
 	public function write($str)
 	{
 		$this->body .= $str;
 		$this->length = \strlen($this->body);
 	}
 
-	public function content_type(){}
+	/**
+	 * @param  int $code      The status code (setting)
+	 * @return int            The status code (get)
+	 * @return \Cog\Response  $this (set)
+	 */
+	public function status($code = null)
+	{
+		if ($code === null)
+		{
+			return $this->status;
+		}
 
-	public function content_length(){}
+		$this->status = (int) $code;
+		return $this;
+	}
 
-	public function location(){}
+	/**
+	 * @param  string $value The content type value
+	 * @return string        The content type (get)
+	 * @return \Cog\Response $this (set)
+	 */
+	public function contentType($value = null)
+	{
+		if ($value === null)
+		{
+			return $this->header('Content-Type');
+		}
+
+		$this->offsetSet('Content-Type', $value);
+		return $this;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function contentLength()
+	{
+		return (int) $this->length;
+	}
+
+	/**
+	 * @param  string $path  A new location (for redirects)
+	 * @return string        The current location path or null (get)
+	 * @return \Cog\Response $this (set)
+	 */
+	public function location($path = null)
+	{
+		if ($path === null)
+		{
+			return $this->header('Location');
+		}
+
+		$this->offsetSet('Location', $path);
+		return $this;
+	}
+
+	/**
+	 * @param  string $name    The header name
+	 * @param  mixed  $default The default value to use if the header is not found
+	 * @return mixed
+	 */
+	public function header($name, $default = null)
+	{
+		if ($this->offsetExists($name))
+		{
+			$default = $this->offsetGet($name);
+		}
+
+		return $default;
+	}
 
 	/** Implementing ArrayAccess */
 
