@@ -34,6 +34,14 @@ class Environment implements \ArrayAccess
 		));
 	}
 
+	/**
+	 * @return array
+	 */
+	public function toArray()
+	{
+		return $this->params;
+	}
+
 	/** Implementing ArrayAccess */
 
 	public function offsetExists($offset)
