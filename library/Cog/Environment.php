@@ -35,6 +35,21 @@ class Environment implements \ArrayAccess
 	}
 
 	/**
+	 * @param  string $name    The parmeter name
+	 * @param  mixed  $default The default value to use if the param is not found
+	 * @return mixed
+	 */
+	public function param($name, $default = null)
+	{
+		if (\array_key_exists($name, $this->params))
+		{
+			$default = $this->params[$name];
+		}
+
+		return $default;
+	}
+
+	/**
 	 * @return array
 	 */
 	public function toArray()
