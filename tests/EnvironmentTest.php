@@ -8,7 +8,7 @@ class EnvironmentTest extends PHPUnit_Framework_Testcase
 
 	public function setUp()
 	{
-		$this->environment = new \Cog\Environment(MockServer::get());
+		$this->environment = MockServer::get();
 	}
 
 	public function testArrayAccess()
@@ -29,7 +29,7 @@ class EnvironmentTest extends PHPUnit_Framework_Testcase
 
 	public function testCogUrlSchemeSecure()
 	{
-		$environment = new \Cog\Environment(MockServer::secure());
+		$environment = MockServer::secure();
 		$this->assertSame('https', $environment['cog.url_scheme']);
 	}
 
