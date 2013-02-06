@@ -24,6 +24,11 @@ abstract class AbstractMessage implements HTTP\Message
 	 */
 	protected $body = "";
 
+	public function __construct()
+	{
+		$this->headers = new \Cog\Hash;
+	}
+
 /* =====================
    \Cog\HTTP\Message
    ===================== */
