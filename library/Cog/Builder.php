@@ -15,12 +15,12 @@ class Builder
 	private $middleware;
 
 	/**
-	 * @var \Cog\HTTP\Request  The request environment
+	 * @var \Cog\Request  The request environment
 	 */
 	private $request;
 
 	/**
-	 * @var \Cog\HTTP\Response  The response object to write to the server
+	 * @var \Cog\Response  The response object to write to the server
 	 */
 	private $response;
 
@@ -35,7 +35,7 @@ class Builder
 	 */
 	public function __construct($environment, $options = array())
 	{
-		$this->request = new \Cog\HTTP\Request($environment);
+		$this->request = new \Cog\Request($environment);
 		$this->options = $options;
 	}
 
@@ -69,7 +69,7 @@ class Builder
 			}
 		}
 
-		$this->response = $current->call($this->request, new \Cog\HTTP\Response);
+		$this->response = $current->call($this->request, new \Cog\Response);
 		return $this->response;
 	}
 

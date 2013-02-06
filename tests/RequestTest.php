@@ -8,7 +8,7 @@ class RequestTest extends PHPUnit_Framework_TestCase
 
 	public function setUp()
 	{
-		$this->request = new \Cog\HTTP\Request(MockServer::get());
+		$this->request = new \Cog\Request(MockServer::get());
 	}
 
 	public function testMediaType()
@@ -56,7 +56,7 @@ class RequestTest extends PHPUnit_Framework_TestCase
 
 	public function testBaseUrlWithPort()
 	{
-		$request = new \Cog\HTTP\Request(MockServer::port());
+		$request = new \Cog\Request(MockServer::port());
 		$this->assertSame('http://localhost:81', $request->baseUrl());
 	}
 
@@ -68,7 +68,7 @@ class RequestTest extends PHPUnit_Framework_TestCase
 	 */
 	public function testUrl()
 	{
-		$request = new \Cog\HTTP\Request(MockServer::getWithQuery());
+		$request = new \Cog\Request(MockServer::getWithQuery());
 		$expected = 'http://localhost/index.php?foo=bar&languages%5B0%5D=php&languages%5B1%5D=ruby';
 		$this->assertSame($expected, $request->url());
 	}
@@ -80,7 +80,7 @@ class RequestTest extends PHPUnit_Framework_TestCase
 
 	public function testFullPath()
 	{
-		$request = new \Cog\HTTP\Request(MockServer::getWithQuery());
+		$request = new \Cog\Request(MockServer::getWithQuery());
 		$this->assertSame(
 			"/index.php?foo=bar&languages%5B0%5D=php&languages%5B1%5D=ruby",
 			$request->fullPath()
@@ -99,7 +99,7 @@ class RequestTest extends PHPUnit_Framework_TestCase
 
 	public function testXHR()
 	{
-		$request = new \Cog\HTTP\Request(MockServer::xhr());
+		$request = new \Cog\Request(MockServer::xhr());
 		$this->assertTrue($request->isXHR());
 	}
 
@@ -110,13 +110,13 @@ class RequestTest extends PHPUnit_Framework_TestCase
 
 	public function testSSL()
 	{
-		$request = new \Cog\HTTP\Request(MockServer::secure());
+		$request = new \Cog\Request(MockServer::secure());
 		$this->assertTrue($request->isSSL());
 	}
 
 	public function testGetParams()
 	{
-		$request = new \Cog\HTTP\Request(MockServer::getWithQuery());
+		$request = new \Cog\Request(MockServer::getWithQuery());
 		$this->assertSame(
 			array(
 				'foo' => 'bar',
@@ -136,7 +136,7 @@ class RequestTest extends PHPUnit_Framework_TestCase
 
 	public function testRawPostData()
 	{
-		$request = new \Cog\HTTP\Request(MockServer::post());
+		$request = new \Cog\Request(MockServer::post());
 		$this->assertSame(
 			"foo=bar&languages%5B0%5D=php&languages%5B1%5D=ruby",
 			$request->body()
@@ -145,7 +145,7 @@ class RequestTest extends PHPUnit_Framework_TestCase
 
 	public function testGetPostData()
 	{
-		$request = new \Cog\HTTP\Request(MockServer::post());
+		$request = new \Cog\Request(MockServer::post());
 		$this->assertSame(
 			array(
 				'foo' => 'bar',

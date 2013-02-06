@@ -1,6 +1,6 @@
 <?php
 
-namespace Cog\HTTP;
+namespace Cog;
 
 /**
  * The HTTP Response object

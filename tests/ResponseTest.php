@@ -6,7 +6,7 @@ class ResponseTest extends PHPUnit_Framework_TestCase
 
 	public function setUp()
 	{
-		$this->response = new \Cog\HTTP\Response;
+		$this->response = new \Cog\Response;
 	}
 
 	public function testBody()
