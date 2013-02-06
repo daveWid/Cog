@@ -33,25 +33,25 @@ class MockServer
 	);
 
 	/**
-	 * @return \Cog\Environment  A "mock" get request.
+	 * @return \Cog\Hash  A "mock" get request.
 	 */
 	public static function get()
 	{
-		return new \Cog\Environment(self::$request);
+		return new \Cog\Hash(self::$request);
 	}
 
 	/**
-	 * @return \Cog\Environment  A "mock" get request.
+	 * @return \Cog\Hash  A "mock" get request.
 	 */
 	public static function port()
 	{
 		$data = self::$request;
 		$data['SERVER_PORT'] = 81;
-		return new \Cog\Environment($data);
+		return new \Cog\Hash($data);
 	}
 
 	/**
-	 * @return \Cog\Environment
+	 * @return \Cog\Hash
 	 */
 	public static function getWithQuery()
 	{
@@ -61,40 +61,40 @@ class MockServer
 			'languages' => array('php', 'ruby')
 		));
 
-		return new \Cog\Environment($data);
+		return new \Cog\Hash($data);
 	}
 
 	/**
-	 * @return \Cog\Environment
+	 * @return \Cog\Hash
 	 */
 	public static function secure()
 	{
 		$data = self::$request;
 		$data['HTTPS'] = "on";
 
-		return new \Cog\Environment($data);
+		return new \Cog\Hash($data);
 	}
 
 	/**
-	 * @return \Cog\Environment
+	 * @return \Cog\Hash
 	 */
 	public static function xhr()
 	{
 		$data = self::$request;
 		$data['HTTP_X_REQUESTED_WITH'] = "XMLHttpRequest";
 
-		return new \Cog\Environment($data);
+		return new \Cog\Hash($data);
 	}
 
 	/**
-	 * @return \Cog\Environment
+	 * @return \Cog\Hash
 	 */
 	public static function post()
 	{
 		$data = self::$request;
 		$data['REQUEST_METHOD'] = "POST";
 
-		$server = new \Cog\Environment($data);
+		$server = new \Cog\Hash($data);
 
 		/** Please don't do this in a real app, only for testing a post request... */
 		$server['cog.input'] = http_build_query(array(
