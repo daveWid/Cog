@@ -1,6 +1,6 @@
 <?php
 
-namespace Cog;
+namespace Cog\HTTP;
 
 /**
  * The HTTP Response object
@@ -30,9 +30,9 @@ class Response implements \ArrayAccess
 	private $headers = array();
 
 	/**
-	 * @param  string $content  Body content. Overwrites the current content.
-	 * @return string           The body content (get)
-	 * @return \Cog\Response    $this (set)
+	 * @param  string $content     Body content. Overwrites the current content.
+	 * @return string              The body content (get)
+	 * @return \Cog\HTTP\Response  $this (set)
 	 */
 	public function body($content = null)
 	{
@@ -56,9 +56,9 @@ class Response implements \ArrayAccess
 	}
 
 	/**
-	 * @param  int $code      The status code (setting)
-	 * @return int            The status code (get)
-	 * @return \Cog\Response  $this (set)
+	 * @param  int $code           The status code (setting)
+	 * @return int                 The status code (get)
+	 * @return \Cog\HTTP\Response  $this (set)
 	 */
 	public function status($code = null)
 	{
@@ -72,9 +72,9 @@ class Response implements \ArrayAccess
 	}
 
 	/**
-	 * @param  string $value The content type value
-	 * @return string        The content type (get)
-	 * @return \Cog\Response $this (set)
+	 * @param  string $value       The content type value
+	 * @return string              The content type (get)
+	 * @return \Cog\HTTP\Response  $this (set)
 	 */
 	public function contentType($value = null)
 	{
@@ -96,9 +96,9 @@ class Response implements \ArrayAccess
 	}
 
 	/**
-	 * @param  string $path  A new location (for redirects)
-	 * @return string        The current location path or null (get)
-	 * @return \Cog\Response $this (set)
+	 * @param  string $path       A new location (for redirects)
+	 * @return string             The current location path or null (get)
+	 * @return \Cog\HTTP\Response $this (set)
 	 */
 	public function location($path = null)
 	{

@@ -1,6 +1,6 @@
 <?php
 
-namespace Cog;
+namespace Cog\HTTP;
 
 /**
  * The HTTP Request
@@ -25,23 +25,19 @@ class Request
 	private $post;
 
 	/**
-	 * @var array  Request parameters (GET and POST)
-	 */
-	private $params;
-
-	/**
-	 * @param array|\Cog\Environment $environment The request environment variables
+	 * @param array|\Cog\Hash $environment The request environment variables
 	 */
 	public function __construct($environment)
 	{
-		if ( ! $environment instanceof \Cog\Environment)
+		if ( ! $environment instanceof \Cog\Hash)
 		{
-			$environment = new \Cog\Environment($environment);
+			$environment = new \Cog\Hash($environment);
 		}
+		$environment->setArray($this->addCogEnvironment($environment->toArray()));
 		$this->environment = $environment;
 
 		\parse_str($this->queryString(), $this->get);
-		\parse_str($this->environment->param('cog.input'), $this->post);
+		\parse_str($this->environment->get('cog.input'), $this->post);
 	}
 
 	/**
@@ -57,7 +53,7 @@ class Request
 	 */
 	public function body()
 	{
-		return $this->environment->param('cog.input', '');
+		return $this->environment->get('cog.input', '');
 	}
 
 	/**
@@ -65,7 +61,7 @@ class Request
 	 */
 	public function scriptName()
 	{
-		$name = $this->environment->param('SCRIPT_NAME', '');
+		$name = $this->environment->get('SCRIPT_NAME', '');
 		if ($name !== '')
 		{
 			$name = '/' . \ltrim($name, '/');
@@ -79,7 +75,7 @@ class Request
 	 */
 	public function pathInfo()
 	{
-		$path = $this->environment->param('PATH_INFO', '');
+		$path = $this->environment->get('PATH_INFO', '');
 		if ($path !== '')
 		{
 			$path = '/' . \ltrim($path, '/');
@@ -93,7 +89,7 @@ class Request
 	 */
 	public function requestMethod()
 	{
-		return $this->environment->param('REQUEST_METHOD', '');
+		return $this->environment->get('REQUEST_METHOD', '');
 	}
 
 	/**
@@ -101,7 +97,7 @@ class Request
 	 */
 	public function queryString()
 	{
-		return $this->environment->param('QUERY_STRING', '');
+		return $this->environment->get('QUERY_STRING', '');
 	}
 
 	/**
@@ -109,7 +105,7 @@ class Request
 	 */
 	public function contentLength()
 	{
-		return $this->environment->param('SCRIPT_NAME', 0);
+		return $this->environment->get('SCRIPT_NAME', 0);
 	}
 
 	/**
@@ -117,7 +113,7 @@ class Request
 	 */
 	public function contentType()
 	{
-		return $this->environment->param('HTTP_ACCEPT', '');
+		return $this->environment->get('HTTP_ACCEPT', '');
 	}
 
 	/**
@@ -165,7 +161,7 @@ class Request
 	 */
 	public function charset()
 	{
-		$charset = $this->environment->param('HTTP_ACCEPT_CHARSET', null);
+		$charset = $this->environment->get('HTTP_ACCEPT_CHARSET', null);
 
 		if ($charset === null)
 		{
@@ -184,7 +180,7 @@ class Request
 	 */
 	public function scheme()
 	{
-		return $this->environment->param('cog.url_scheme');
+		return $this->environment->get('cog.url_scheme');
 	}
 
 	/**
@@ -192,7 +188,7 @@ class Request
 	 */
 	public function port()
 	{
-		return (int) $this->environment->param('SERVER_PORT', 80);
+		return (int) $this->environment->get('SERVER_PORT', 80);
 	}
 
 	/**
@@ -200,7 +196,7 @@ class Request
 	 */
 	public function host()
 	{
-		return $this->environment->param('HTTP_HOST', 'localhost');
+		return $this->environment->get('HTTP_HOST', 'localhost');
 	}
 
 	/**
@@ -208,7 +204,7 @@ class Request
 	 */
 	public function referrer()
 	{
-		return $this->environment->param('HTTP_REFERER', '');
+		return $this->environment->get('HTTP_REFERER', '');
 	}
 
 	/**
@@ -216,7 +212,7 @@ class Request
 	 */
 	public function userAgent()
 	{
-		return $this->environment->param('HTTP_USER_AGENT', '');
+		return $this->environment->get('HTTP_USER_AGENT', '');
 	}
 
 	/**
@@ -226,7 +222,7 @@ class Request
 	{
 		$cookies = array();
 
-		$cookie_string = $this->environment->param('HTTP_COOKIE', '');
+		$cookie_string = $this->environment->get('HTTP_COOKIE', '');
 		if ( ! empty($cookie_string))
 		{
 			foreach (\explode('; ', $cookie_string) as $item)
@@ -291,7 +287,7 @@ class Request
 	 */
 	public function acceptEncoding()
 	{
-		$encoding = \explode(',', $this->environment->param('HTTP_ACCEPT_ENCODING', ''));
+		$encoding = \explode(',', $this->environment->get('HTTP_ACCEPT_ENCODING', ''));
 		return array_map('trim', $encoding);
 	}
 
@@ -300,7 +296,7 @@ class Request
 	 */
 	public function isXHR()
 	{
-		$header = $this->environment->param('HTTP_X_REQUESTED_WITH', false);
+		$header = $this->environment->get('HTTP_X_REQUESTED_WITH', false);
 		return $header === "XMLHttpRequest";
 	}
 
@@ -388,6 +384,26 @@ class Request
 		}
 
 		return $default;
+	}
+
+	/**
+	 * @param  array $data THe current environment.
+	 * @return array
+	 */
+	private function addCogEnvironment(array $data)
+	{
+		$scheme = 'http';
+		if (array_key_exists('HTTPS', $data) && $data['HTTPS'] !== 'off')
+		{
+			$scheme .= 's';
+		}
+
+		return array(
+			'cog.version' => array(0, 1, 0),
+			'cog.url_scheme' => $scheme,
+			'cog.input' => \file_get_contents("php://input"),
+			'cog.errors' => \STDERR
+		);
 	}
 
 }
