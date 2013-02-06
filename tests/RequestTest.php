@@ -1,6 +1,6 @@
 <?php
 
-include_once 'classes/MockServer.php';
+include_once 'classes/MockRequest.php';
 
 class RequestTest extends PHPUnit_Framework_TestCase
 {
@@ -8,18 +8,18 @@ class RequestTest extends PHPUnit_Framework_TestCase
 
 	public function setUp()
 	{
-		$this->request = new \Cog\Request(MockServer::get());
+		$this->request = MockRequest::get();
 	}
 
 	public function testMediaType()
 	{
-		$this->assertSame(array(
-				'text/html',
-				'application/xhtml+xml',
-				'application/xml'
-			),
-			$this->request->mediaType()
+		$expected = array(
+			'text/html',
+			'application/xhtml+xml',
+			'application/xml'
 		);
+
+		$this->assertSame($expected, $this->request->getMediaType());
 	}
 
 	public function testMediaTypeParams()
@@ -29,13 +29,13 @@ class RequestTest extends PHPUnit_Framework_TestCase
 				'q' => array('0.9,*/*', '0.8'),
 				'charset' => 'utf-8'
 			),
-			$this->request->mediaTypeParams()
+			$this->request->getMediaTypeParams()
 		);
 	}
 
 	public function testCharset()
 	{
-		$this->assertSame('utf-8', $this->request->charset());
+		$this->assertSame('utf-8', $this->request->getCharset());
 	}
 
 	public function testCookies()
@@ -45,19 +45,19 @@ class RequestTest extends PHPUnit_Framework_TestCase
 				'testing' => 'true',
 				'foo' => 'bar'
 			),
-			$this->request->cookies()
+			$this->request->getCookies()
 		);
 	}
 
 	public function testBaseUrl()
 	{
-		$this->assertSame('http://localhost', $this->request->baseUrl());
+		$this->assertSame('http://localhost', $this->request->getBaseUrl());
 	}
 
 	public function testBaseUrlWithPort()
 	{
-		$request = new \Cog\Request(MockServer::port());
-		$this->assertSame('http://localhost:81', $request->baseUrl());
+		$request = MockRequest::port();
+		$this->assertSame('http://localhost:81', $request->getBaseUrl());
 	}
 
 	/**
@@ -68,28 +68,28 @@ class RequestTest extends PHPUnit_Framework_TestCase
 	 */
 	public function testUrl()
 	{
-		$request = new \Cog\Request(MockServer::getWithQuery());
+		$request = MockRequest::getWithQuery();
 		$expected = 'http://localhost/index.php?foo=bar&languages%5B0%5D=php&languages%5B1%5D=ruby';
-		$this->assertSame($expected, $request->url());
+		$this->assertSame($expected, $request->getUrl());
 	}
 
 	public function testPath()
 	{
-		$this->assertSame('/index.php', $this->request->path());
+		$this->assertSame('/index.php', $this->request->getPath());
 	}
 
 	public function testFullPath()
 	{
-		$request = new \Cog\Request(MockServer::getWithQuery());
+		$request = MockRequest::getWithQuery();
 		$this->assertSame(
 			"/index.php?foo=bar&languages%5B0%5D=php&languages%5B1%5D=ruby",
-			$request->fullPath()
+			$request->getFullPath()
 		);
 	}
 
 	public function testAcceptEncoding()
 	{
-		$this->assertSame(array('gzip', 'deflate'), $this->request->acceptEncoding());
+		$this->assertSame(array('gzip', 'deflate'), $this->request->getAcceptEncoding());
 	}
 
 	public function testNoXHR()
@@ -99,7 +99,7 @@ class RequestTest extends PHPUnit_Framework_TestCase
 
 	public function testXHR()
 	{
-		$request = new \Cog\Request(MockServer::xhr());
+		$request = MockRequest::xhr();
 		$this->assertTrue($request->isXHR());
 	}
 
@@ -110,19 +110,19 @@ class RequestTest extends PHPUnit_Framework_TestCase
 
 	public function testSSL()
 	{
-		$request = new \Cog\Request(MockServer::secure());
+		$request = MockRequest::secure();
 		$this->assertTrue($request->isSSL());
 	}
 
-	public function testGetParams()
+	public function testQueryParams()
 	{
-		$request = new \Cog\Request(MockServer::getWithQuery());
+		$request = MockRequest::getWithQuery();
 		$this->assertSame(
 			array(
 				'foo' => 'bar',
 				'languages' => array('php',	'ruby')
 			),
-			$request->query()
+			$request->getQuery()
 		);
 	}
 
@@ -136,22 +136,22 @@ class RequestTest extends PHPUnit_Framework_TestCase
 
 	public function testRawPostData()
 	{
-		$request = new \Cog\Request(MockServer::post());
+		$request = MockRequest::post();
 		$this->assertSame(
 			"foo=bar&languages%5B0%5D=php&languages%5B1%5D=ruby",
-			$request->body()
+			$request->getBody()
 		);
 	}
 
 	public function testGetPostData()
 	{
-		$request = new \Cog\Request(MockServer::post());
+		$request = MockRequest::post();
 		$this->assertSame(
 			array(
 				'foo' => 'bar',
 				'languages' => array('php', 'ruby')
 			),
-			$request->post()
+			$request->getPost()
 		);
 	}
 

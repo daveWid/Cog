@@ -7,61 +7,221 @@ namespace Cog;
  *
  * @package  Cog
  */
-class Request
+class Request extends AbstractMessage implements HTTP\Request
 {
 	/**
-	 * @var array|ArrayAccess  Environment variables
+	 * Creates a new Request from the PHP Global variables.
+	 *
+	 * @return \Cog\Request
 	 */
-	private $environment;
+	public static function createFromGlobals()
+	{
+		return new static(array(
+			'query' => $_GET,
+			'post' => $_POST,
+			'headers' => $_SERVER,
+			'cookies' => $_COOKIE,
+			'files' => $_FILES,
+			'body' => \file_get_contents("php://input")
+		));
+	}
 
 	/**
-	 * @var array  Get variables
+	 * @var \Cog\Hash  Query string variables
 	 */
-	private $get;
+	private $query;
 
 	/**
-	 * @var array  Post variables
+	 * @var \Cog\Hash  Post variables
 	 */
 	private $post;
 
 	/**
-	 * @param array|\Cog\Hash $environment The request environment variables
+	 * @var \Cog\Hash  Cookies
 	 */
-	public function __construct($environment)
+	private $cookies;
+
+	/**
+	 * @var \Cog\Hash  File upload data
+	 */
+	private $files;
+
+	/**
+	 * @var string     The http protocol scheme (https?)
+	 */
+	private $scheme;
+
+	/**
+	 * Creates a new HTTP Request.
+	 *
+	 * Here are the properties that can be set.
+	 *
+	 * Key     | Description                 | Type
+	 * --------|-----------------------------|-------
+	 * query   | Query data                  | array
+	 * post    | Post data                   | array
+	 * headers | HTTP Request headers        | array
+	 * cookies | Cookies                     | array
+	 * files   | File Upload data            | array
+	 * body    | The raw http request body   | string
+	 *
+	 * @param array $data  The request parameters
+	 */
+	public function __construct(array $data = array())
 	{
-		if ( ! $environment instanceof \Cog\Hash)
+		$default = array(
+			'query' => array(),
+			'post' => array(),
+			'headers' => array(),
+			'cookies' => array(),
+			'files' => array()
+		);
+
+		$body = "";
+		if (\array_key_exists('body', $data))
 		{
-			$environment = new \Cog\Hash($environment);
+			$body = $data['body'];
+			unset($data['body']);
 		}
-		$environment->setArray($this->addCogEnvironment($environment->toArray()));
-		$this->environment = $environment;
+		$this->setBody($body);
 
-		\parse_str($this->queryString(), $this->get);
-		\parse_str($this->environment->get('cog.input'), $this->post);
+		$data = array_merge($default, $data);
+		foreach ($data as $key => $value)
+		{
+			$this->{$key} = new \Cog\Hash($value);
+		}
+
+		$this->setScheme();
 	}
 
 	/**
-	 * @return array|ArrayAccess  The environment variables
+	 * Internal function to get the value of a Hash.
+	 *
+	 * @param  string $name    The hash to search
+	 * @param  string $key     The property to find | if null then the full array
+	 * @param  mixed  $default The default value if the property isn't found
+	 * @return mixed           Full data array or the property|default value
 	 */
-	public function environment()
+	private function getValue($name, $key, $default)
 	{
-		return $this->environment;
+		if ($key === null)
+		{
+			return $this->{$name}->toArray();
+		}
+
+		return $this->{$name}->get($key, $default);
+	}
+
+	/**
+	 * Internal function to get the value of a Hash.
+	 *
+	 * @param  string $name    The hash to search
+	 * @param  string $key     The property to find | if null then the full array
+	 * @param  mixed  $default The default value if the property isn't found
+	 * @return mixed           Full data array or the property|default value
+	 */
+	private function setValue($name, $key, $value)
+	{
+		if ( ! \is_array($key))
+		{
+			$key = array($key => $value);
+		}
+
+		$this->{$name}->setArray($key);
+	}
+
+	/**
+	 * @see #getValue
+	 */
+	public function getQuery($name = null, $default = null)
+	{
+		return $this->getValue('query', $name, $default);
+	}
+
+	/**
+	 * @see #setValue
+	 */
+	public function setQuery($name, $value = null)
+	{
+		$this->setValue('query', $name, $value);
+		return $this;
+	}
+
+	/**
+	 * @see #getValue
+	 */
+	public function getPost($name = null, $default = null)
+	{
+		return $this->getValue('post', $name, $default);
+	}
+
+	/**
+	 * @see #setValue
+	 */
+	public function setPost($name, $value = null)
+	{
+		$this->setValue('post', $name, $value);
+		return $this;
+	}
+
+	/**
+	 * @see #getValue
+	 */
+	public function getCookies($name = null, $default = null)
+	{
+		return $this->getValue('cookies', $name, $default);
+	}
+
+	/**
+	 * @see #setValue
+	 */
+	public function setCookies($name, $value = null)
+	{
+		$this->setValue('cookies', $name, $value);
+		return $this;
+	}
+
+	/**
+	 * @see #getValue
+	 */
+	public function getFiles($name = null, $default = null)
+	{
+		return $this->getValue('files', $name, $default);
+	}
+
+	/**
+	 * @see #setValue
+	 */
+	public function setFiles($name, $value = null)
+	{
+		$this->setValue('files', $name, $value);
+		return $this;
 	}
 
 	/**
 	 * @return string
 	 */
-	public function body()
+	public function getContentType()
 	{
-		return $this->environment->get('cog.input', '');
+		return $this->headers->get('HTTP_ACCEPT', '');
 	}
+
+	/**
+	 * @return array
+	 */
+	public function getMediaType()
+	{
+		list($type) = \explode(";", $this->getContentType());
+		return \explode(',', $type);
+	}
+
 
 	/**
 	 * @return string
 	 */
-	public function scriptName()
+	public function getScriptName()
 	{
-		$name = $this->environment->get('SCRIPT_NAME', '');
+		$name = $this->getHeader('SCRIPT_NAME', '');
 		if ($name !== '')
 		{
 			$name = '/' . \ltrim($name, '/');
@@ -73,9 +233,9 @@ class Request
 	/**
 	 * @return string
 	 */
-	public function pathInfo()
+	public function getPathInfo()
 	{
-		$path = $this->environment->get('PATH_INFO', '');
+		$path = $this->getHeader('PATH_INFO', '');
 		if ($path !== '')
 		{
 			$path = '/' . \ltrim($path, '/');
@@ -85,52 +245,19 @@ class Request
 	}
 
 	/**
-	 * @return string
-	 */
-	public function requestMethod()
-	{
-		return $this->environment->get('REQUEST_METHOD', '');
-	}
-
-	/**
-	 * @return string
-	 */
-	public function queryString()
-	{
-		return $this->environment->get('QUERY_STRING', '');
-	}
-
-	/**
 	 * @return int
 	 */
-	public function contentLength()
+	public function getContentLength()
 	{
-		return $this->environment->get('SCRIPT_NAME', 0);
-	}
-
-	/**
-	 * @return string
-	 */
-	public function contentType()
-	{
-		return $this->environment->get('HTTP_ACCEPT', '');
+		return $this->getHeader('SCRIPT_NAME', 0);
 	}
 
 	/**
 	 * @return array
 	 */
-	public function mediaType()
+	public function getMediaTypeParams()
 	{
-		list($type) = \explode(";", $this->contentType());
-		return \explode(',', $type);
-	}
-
-	/**
-	 * @return array
-	 */
-	public function mediaTypeParams()
-	{
-		$media = \explode(';', $this->contentType());
+		$media = \explode(';', $this->getContentType());
 		\array_shift($media);
 
 		$params = array();
@@ -159,13 +286,13 @@ class Request
 	/**
 	 * @return string|null
 	 */
-	public function charset()
+	public function getCharset()
 	{
-		$charset = $this->environment->get('HTTP_ACCEPT_CHARSET', null);
+		$charset = $this->headers->get('HTTP_ACCEPT_CHARSET', null);
 
 		if ($charset === null)
 		{
-			$params = $this->mediaTypeParams();
+			$params = $this->getMediaTypeParams();
 			if (\array_key_exists('charset', $params))
 			{
 				$charset = $params['charset'];
@@ -178,73 +305,65 @@ class Request
 	/**
 	 * @return string
 	 */
-	public function scheme()
+	public function getScheme()
 	{
-		return $this->environment->get('cog.url_scheme');
+		return $this->scheme;
+	}
+
+	public function setScheme()
+	{
+		$scheme = 'http';
+		$https = $this->headers->get('HTTPS');
+		if ($https !== null && $https !== 'off')
+		{
+			$scheme .= "s";
+		}
+
+		$this->scheme = $scheme;
 	}
 
 	/**
 	 * @return int
 	 */
-	public function port()
+	public function getPort()
 	{
-		return (int) $this->environment->get('SERVER_PORT', 80);
+		return (int) $this->getHeader('SERVER_PORT', 80);
 	}
 
 	/**
 	 * @return string
 	 */
-	public function host()
+	public function getHost()
 	{
-		return $this->environment->get('HTTP_HOST', 'localhost');
+		return $this->getHeader('HTTP_HOST', 'localhost');
 	}
 
 	/**
 	 * @return string
 	 */
-	public function referrer()
+	public function getReferrer()
 	{
-		return $this->environment->get('HTTP_REFERER', '');
+		return $this->getHeader('HTTP_REFERER', '');
 	}
 
 	/**
 	 * @return string
 	 */
-	public function userAgent()
+	public function getUserAgent()
 	{
-		return $this->environment->get('HTTP_USER_AGENT', '');
+		return $this->getHeader('HTTP_USER_AGENT', '');
 	}
 
 	/**
-	 * @return array
+	 * @return string
 	 */
-	public function cookies()
+	public function getBaseUrl()
 	{
-		$cookies = array();
+		$url = $this->getScheme().'://'.$this->getHost();
 
-		$cookie_string = $this->environment->get('HTTP_COOKIE', '');
-		if ( ! empty($cookie_string))
+		if ( ! in_array($this->getPort(), array(80, 443)))
 		{
-			foreach (\explode('; ', $cookie_string) as $item)
-			{
-				list($key, $value) = \explode('=', $item);
-				$cookies[$key] = \urldecode($value);
-			}
-		}
-
-		return $cookies;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function baseUrl()
-	{
-		$url = $this->scheme().'://'.$this->host();
-
-		if ( ! in_array($this->port(), array(80, 443)))
-		{
-			$url .= ':'.$this->port();
+			$url .= ':'.$this->getPort();
 		}
 
 		return $url;
@@ -253,30 +372,30 @@ class Request
 	/**
 	 * @return string
 	 */
-	public function url()
+	public function getUrl()
 	{
-		return $this->baseUrl() . $this->fullPath();
+		return $this->getBaseUrl() . $this->getFullPath();
 	}
 
 	/**
 	 * @return string
 	 */
-	public function path()
+	public function getPath()
 	{
-		return $this->scriptName() . $this->pathInfo();
+		return $this->getScriptName() . $this->getPathInfo();
 	}
 
 	/**
 	 * @return string
 	 */
-	public function fullPath()
+	public function getFullPath()
 	{
-		$path = $this->path();
-		$query = $this->queryString();
+		$path = $this->getPath();
+		$query = $this->getQuery();
 
 		if ( ! empty($query))
 		{
-			$path .= "?".$query;
+			$path .= "?".\http_build_query($query);
 		}
 
 		return $path;
@@ -285,9 +404,9 @@ class Request
 	/**
 	 * @return string
 	 */
-	public function acceptEncoding()
+	public function getAcceptEncoding()
 	{
-		$encoding = \explode(',', $this->environment->get('HTTP_ACCEPT_ENCODING', ''));
+		$encoding = \explode(',', $this->getHeader('HTTP_ACCEPT_ENCODING', ''));
 		return array_map('trim', $encoding);
 	}
 
@@ -296,7 +415,7 @@ class Request
 	 */
 	public function isXHR()
 	{
-		$header = $this->environment->get('HTTP_X_REQUESTED_WITH', false);
+		$header = $this->getHeader('HTTP_X_REQUESTED_WITH', false);
 		return $header === "XMLHttpRequest";
 	}
 
@@ -305,7 +424,7 @@ class Request
 	 */
 	public function isSSL()
 	{
-		return $this->scheme() === 'https';
+		return $this->getScheme() === 'https';
 	}
 
 	/**
@@ -313,7 +432,7 @@ class Request
 	 */
 	public function isDelete()
 	{
-		return $this->requestMethod() === "DELETE";
+		return $this->getMethod() === "DELETE";
 	}
 
 	/**
@@ -321,7 +440,7 @@ class Request
 	 */
 	public function isGet()
 	{
-		return $this->requestMethod() === "GET";
+		return $this->getMethod() === "GET";
 	}
 
 	/**
@@ -329,7 +448,7 @@ class Request
 	 */
 	public function isPost()
 	{
-		return $this->requestMethod() === "POST";
+		return $this->getMethod() === "POST";
 	}
 
 	/**
@@ -337,73 +456,40 @@ class Request
 	 */
 	public function isPut()
 	{
-		return $this->requestMethod() === "PUT";
+		return $this->getMethod() === "PUT";
+	}
+
+/** =======================
+    \Cog\HTTP\Message
+    ======================= */
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function __toString()
+	{
+		return ""; // Fix this....
+	}
+
+/** =======================
+    \Cog\HTTP\Request
+    ======================= */
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function getMethod()
+	{
+		return $this->headers->get('REQUEST_METHOD', 'GET');
 	}
 
 	/**
-	 * Get post data. If the name isn't spcecified, then the full post
-	 * array will be returned.
-	 *
-	 * @param  string $name    The param name
-	 * @param  mixed  $default The default value (only if name is given)
-	 * @return mixed
+	 * {@inheritDoc}
 	 */
-	public function post($name = null, $default = null)
+	public function setMethod($method)
 	{
-		if ($name !== null)
-		{
-			return $this->getArrayValue($this->post, $name, $default);
-		}
-
-		return $this->post;
-	}
-
-	public function query($name = null, $default = null)
-	{
-		if ($name !== null)
-		{
-			return $this->getArrayValue($this->get, $name, $default);
-		}
-
-		return $this->get;
-	}
-
-	/**
-	 * Gets the value of the key in the given array, or default if not found.
-	 *
-	 * @param  array $array    The search array
-	 * @param  string $key     The key to search for
-	 * @param  mixed $default  The default value if the key isn't found
-	 * @return mixed
-	 */
-	protected function getArrayValue(array $array, $key, $default = null)
-	{
-		if (\array_key_exists($key, $array))
-		{
-			$default = $array[$key];
-		}
-
-		return $default;
-	}
-
-	/**
-	 * @param  array $data THe current environment.
-	 * @return array
-	 */
-	private function addCogEnvironment(array $data)
-	{
-		$scheme = 'http';
-		if (array_key_exists('HTTPS', $data) && $data['HTTPS'] !== 'off')
-		{
-			$scheme .= 's';
-		}
-
-		return array(
-			'cog.version' => array(0, 1, 0),
-			'cog.url_scheme' => $scheme,
-			'cog.input' => \file_get_contents("php://input"),
-			'cog.errors' => \STDERR
-		);
+		$this->headers->set('REQUEST_METHODD', $method);
+		return $this;
 	}
 
 }
