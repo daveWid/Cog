@@ -25,10 +25,22 @@ interface Message
 	public function getHeaders();
 
 	/**
-	 * @param  array $headers  A list of headers to set
-	 * @return \Cog\Message    $this (for chaining)
+	 * Replaces old headers with the passed in headers. If you want to add
+	 * please use addHeaders
+	 *
+	 * @param  array $headers       A list of headers to set
+	 * @return \Cog\HTTP\Message    $this (for chaining)
 	 */
 	public function setHeaders(array $headers);
+
+	/**
+	 * Adds headers to the existing headers. If you want to bulk replace use
+	 * setHeaders
+	 *
+	 * @param  array $headers       A list of headers to set
+	 * @return \Cog\HTTP\Message    $this (for chaining)
+	 */
+	public function addHeaders(array $headers);
 
 	/**
 	 * @param  string $name     The header name to get
@@ -38,9 +50,9 @@ interface Message
 	public function getHeader($name, $default = null);
 
 	/**
-	 * @param  string $name    The header name
-	 * @param  mixed  $value   The header value
-	 * @return \Cog\Message    $this (for chaining)
+	 * @param  string $name       The header name
+	 * @param  mixed  $value      The header value
+	 * @return \Cog\HTTP\Message  $this (for chaining)
 	 */
 	public function setHeader($name, $value);
 

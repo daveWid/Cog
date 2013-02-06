@@ -12,8 +12,8 @@ class ResponseTest extends PHPUnit_Framework_TestCase
 	public function testBody()
 	{
 		$text = "Hello World";
-		$this->response->body($text);
-		$this->assertSame($text, $this->response->body());
+		$this->response->setBody($text);
+		$this->assertSame($text, $this->response->getBody());
 	}
 
 	public function testWriteAppends()
@@ -23,67 +23,62 @@ class ResponseTest extends PHPUnit_Framework_TestCase
 			'Yes indeed!'
 		);
 
-		$this->response->write($text[0]);
-		$this->response->write($text[1]);
-		$this->assertSame(join($text), $this->response->body());
+		$this->response->appendBody($text[0]);
+		$this->response->appendBody($text[1]);
+		$this->assertSame(join($text), $this->response->getBody());
 	}
 
 	public function testStatusDefault()
 	{
-		$this->assertSame(200, $this->response->status());
+		$this->assertSame(200, $this->response->getStatus());
 	}
 
 	public function testSetStatus()
 	{
 		$status = 404;
-		$this->response->status($status);
-		$this->assertSame($status, $this->response->status());
+		$this->response->setStatus($status);
+		$this->assertSame($status, $this->response->getStatus());
 	}
 
 	public function testBodyUpdatesContentLength()
 	{
 		$text = "Hello World";
-		$this->response->body($text);
-		$this->assertSame(11, $this->response->contentLength());
+		$this->response->setBody($text);
+		$this->assertSame(11, $this->response->getContentLength());
 	}
 
 	public function testContentType()
 	{
-		$this->assertSame(null, $this->response->contentType());
+		$this->assertSame(null, $this->response->getContentType());
 	}
 
 	public function testSetContentType()
 	{
 		$type = 'application/json';
-		$this->response->contentType($type);
-		$this->assertSame($type, $this->response->contentType());
-	}
-
-	public function testLocation()
-	{
-		$this->assertSame(null, $this->response->location());
+		$this->response->setContentType($type);
+		$this->assertSame($type, $this->response->getContentType());
 	}
 
 	public function testSetLocation()
 	{
 		$location = "http://localhost";
-		$this->response->location($location);
-		$this->assertSame($location, $this->response->location());
+		$this->response->setLocation($location);
+		$this->assertSame($location, $this->response->getHeader('Location'));
 	}
 
 	public function testResponseChaining()
 	{
 		$data = json_encode(array('success' => true));
-		$this->response->body($data)->contentType('application/json');
+		$this->response->setBody($data)->getContentType('application/json');
 
-		$this->assertSame($data, $this->response->body());
+		$this->assertSame($data, $this->response->getBody());
 	}
 
 	public function testHeader()
 	{
 		$type = "application/json";
-		$this->response->contentType($type);
-		$this->assertSame($type, $this->response->header('Content-Type'));
+		$this->response->setContentType($type);
+		$this->assertSame($type, $this->response->getHeader('Content-Type'));
 	}
 
 	public function testHeaderArrayAccess()

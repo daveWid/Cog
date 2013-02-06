@@ -15,7 +15,7 @@ class BuilderTest extends PHPUnit_Framework_TestCase
 	public function testApp()
 	{
 		$response = $this->builder->run(new App);
-		$this->assertSame("Hi", $response->body());
+		$this->assertSame("Hi", $response->getBody());
 	}
 
 	public function testMiddlewareInterception()
@@ -25,6 +25,6 @@ class BuilderTest extends PHPUnit_Framework_TestCase
 			->using('HelloWorld')
 			->run($app);
 
-		$this->assertSame("Hello World", $response->body());
+		$this->assertSame("Hello World", $response->getBody());
 	}
 }

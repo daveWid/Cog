@@ -7,7 +7,7 @@ namespace Cog;
  *
  * @package Cog
  */
-class Response implements \ArrayAccess
+class Response extends AbstractMessage implements HTTP\Response, \ArrayAccess
 {
 	/**
 	 * @var int  The body length
@@ -15,137 +15,132 @@ class Response implements \ArrayAccess
 	protected $length = 0;
 
 	/**
-	 * @var string  The response body
-	 */
-	private $body;
-
-	/**
 	 * @var int  Defaults to 200 (good response)
 	 */
 	private $status = 200;
 
 	/**
-	 * @var array   The response headers
+	 * @param string  $body    The response body
+	 * @param integer $status  The status code
+	 * @param array   $headers Response headers
 	 */
-	private $headers = array();
+	public function __construct($body = null, $status = 200, $headers = array())
+	{
+		$this->setBody($body);
+		$this->setStatus($status);
+		$this->setHeaders($headers);
+	}
 
 	/**
-	 * @param  string $content     Body content. Overwrites the current content.
-	 * @return string              The body content (get)
-	 * @return \Cog\HTTP\Response  $this (set)
+	 * {@inheritDoc}
 	 */
-	public function body($content = null)
+	public function setBody($body)
 	{
-		if ($content === null)
-		{
-			return $this->body;
-		}
-
 		$this->body = "";
-		$this->write($content);
+		$this->appendBody($body);
 		return $this;
 	}
 
 	/**
 	 * @param  string $str Content to append to the body
 	 */
-	public function write($str)
+	public function appendBody($str)
 	{
 		$this->body .= $str;
 		$this->length = \strlen($this->body);
 	}
 
 	/**
-	 * @param  int $code           The status code (setting)
-	 * @return int                 The status code (get)
-	 * @return \Cog\HTTP\Response  $this (set)
+	 * @return string   The content type
 	 */
-	public function status($code = null)
+	public function getContentType()
 	{
-		if ($code === null)
-		{
-			return $this->status;
-		}
-
-		$this->status = (int) $code;
-		return $this;
+		return $this->headers->get('Content-Type');
 	}
 
 	/**
-	 * @param  string $value       The content type value
-	 * @return string              The content type (get)
-	 * @return \Cog\HTTP\Response  $this (set)
+	 * @param  string $value   The content type value
+	 * @return \Cog\Response   $this
 	 */
-	public function contentType($value = null)
+	public function setContentType($type)
 	{
-		if ($value === null)
-		{
-			return $this->header('Content-Type');
-		}
-
-		$this->offsetSet('Content-Type', $value);
+		$this->headers->offsetSet('Content-Type', $type);
 		return $this;
 	}
 
 	/**
 	 * @return int
 	 */
-	public function contentLength()
+	public function getContentLength()
 	{
 		return (int) $this->length;
 	}
 
 	/**
-	 * @param  string $path       A new location (for redirects)
-	 * @return string             The current location path or null (get)
-	 * @return \Cog\HTTP\Response $this (set)
+	 * @param  string $path    A new location (for redirects)
+	 * @return \Cog\Response   $this (set)
 	 */
-	public function location($path = null)
+	public function setLocation($path)
 	{
-		if ($path === null)
-		{
-			return $this->header('Location');
-		}
-
-		$this->offsetSet('Location', $path);
+		$this->headers->offsetSet('Location', $path);
 		return $this;
 	}
 
-	/**
-	 * @param  string $name    The header name
-	 * @param  mixed  $default The default value to use if the header is not found
-	 * @return mixed
-	 */
-	public function header($name, $default = null)
-	{
-		if ($this->offsetExists($name))
-		{
-			$default = $this->offsetGet($name);
-		}
-
-		return $default;
-	}
-
-	/** Implementing ArrayAccess */
+/** ====================
+    ArrayAccess
+    ==================== */
 
 	public function offsetExists($offset)
 	{
-		return array_key_exists($offset, $this->headers);
+		return $this->headers->offsetExists($offset);
 	}
 
 	public function offsetGet($offset)
 	{
-		return $this->headers[$offset];
+		return $this->headers->offsetGet($offset);
 	}
 
 	public function offsetSet($offset, $value)
 	{
-		$this->headers[$offset] = $value;
+		$this->headers->offsetSet($offset, $value);
 	}
 
 	public function offsetUnset($offset)
 	{
-		unset($this->headers[$offset]);
+		$this->headers->offsetUnset($offset);
+	}
+
+/** =======================
+    \Cog\HTTP\Message
+    ======================= */
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function __toString()
+	{
+		return ""; // Fix this....
+	}
+
+/** =======================
+    \Cog\HTTP\Response
+    ======================= */
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function getStatus()
+	{
+		return $this->status;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function setStatus($code)
+	{
+		$this->status = $code;
+		return $this;
 	}
 
 }
