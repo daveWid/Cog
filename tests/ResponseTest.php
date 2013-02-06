@@ -9,11 +9,11 @@ class ResponseTest extends PHPUnit_Framework_TestCase
 		$this->response = new \Cog\Response;
 	}
 
-	public function testBody()
+	public function testHeaderArrayAccess()
 	{
-		$text = "Hello World";
-		$this->response->setBody($text);
-		$this->assertSame($text, $this->response->getBody());
+		$server = "Apache";
+		$this->response['Server'] = $server;
+		$this->assertSame($server, $this->response['Server']);
 	}
 
 	public function testWriteAppends()
@@ -72,20 +72,6 @@ class ResponseTest extends PHPUnit_Framework_TestCase
 		$this->response->setBody($data)->getContentType('application/json');
 
 		$this->assertSame($data, $this->response->getBody());
-	}
-
-	public function testHeader()
-	{
-		$type = "application/json";
-		$this->response->setContentType($type);
-		$this->assertSame($type, $this->response->getHeader('Content-Type'));
-	}
-
-	public function testHeaderArrayAccess()
-	{
-		$server = "Apache";
-		$this->response['Server'] = $server;
-		$this->assertSame($server, $this->response['Server']);
 	}
 
 }
