@@ -30,12 +30,19 @@ class Builder
 	private $options;
 
 	/**
-	 * @param array $environment Environment variables
-	 * @param array $options     Builder options
+	 * If the request is null, one will be created from global variables.
+	 *
+	 * @param \Cog\Request  $request  The request to use
+	 * @param array         $options  Unused at this point...
 	 */
-	public function __construct($environment, $options = array())
+	public function __construct(\Cog\Request $request = null, $options = array())
 	{
-		$this->request = new \Cog\Request($environment);
+		if ($request === null)
+		{
+			$request = \Cog\Request::createFromGlobals();
+		}
+
+		$this->request = $request;
 		$this->options = $options;
 	}
 

@@ -9,7 +9,7 @@ class BuilderTest extends PHPUnit_Framework_TestCase
 
 	public function setUp()
 	{
-		$this->builder = new \Cog\Builder(array());
+		$this->builder = new \Cog\Builder();
 	}
 
 	public function testApp()
