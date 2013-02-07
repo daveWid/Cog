@@ -1,4 +1,21 @@
 {
+	"name": "davewid/cog",
+	"description": "A Request/Response library that supports middleware",
+	"type": "library",
+	"keywords": ["http", "request", "response", "middleware"],
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Dave Widmer",
+			"email": "dave@davewidmer.net",
+			"homepage": "http://www.davewidmer.net",
+			"role": "Developer"
+		}
+	],
+	"support": {
+		"source": "https://github.com/daveWid/Cog",
+		"issues": "https://github.com/daveWid/Cog/issues"
+	},
 	"autoload": {
 		"psr-0": {
 			"Cog": "library"
