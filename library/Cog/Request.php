@@ -77,6 +77,12 @@ class Request extends AbstractMessage implements HTTP\Request
 			'files' => array()
 		);
 
+		$data = array_merge($default, $data);
+		foreach (\array_keys($default) as $key)
+		{
+			$this->{$key} = new \Cog\Hash($data[$key]);
+		}
+
 		$body = "";
 		if (\array_key_exists('body', $data))
 		{
@@ -84,12 +90,6 @@ class Request extends AbstractMessage implements HTTP\Request
 			unset($data['body']);
 		}
 		$this->setBody($body);
-
-		$data = array_merge($default, $data);
-		foreach ($data as $key => $value)
-		{
-			$this->{$key} = new \Cog\Hash($value);
-		}
 
 		$this->setScheme();
 	}
