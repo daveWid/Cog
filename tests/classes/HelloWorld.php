@@ -12,7 +12,7 @@ class HelloWorld implements \Cog\Middleware
 	public function call($request, $response)
 	{
 		$response = $this->next->call($request, $response);
-		$response->setBody("Hello World");
+		$response->setContent("Hello World");
 
 		return $response;
 	}

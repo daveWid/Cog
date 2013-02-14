@@ -9,13 +9,13 @@ class BuilderTest extends PHPUnit_Framework_TestCase
 
 	public function setUp()
 	{
-		$this->builder = new \Cog\Builder();
+		$this->builder = new \Cog\Builder;
 	}
 
 	public function testApp()
 	{
 		$response = $this->builder->run(new App);
-		$this->assertSame("Hi", $response->getBody());
+		$this->assertSame("Hi", $response->getContent());
 	}
 
 	public function testMiddlewareInterception()
@@ -25,6 +25,6 @@ class BuilderTest extends PHPUnit_Framework_TestCase
 			->using('HelloWorld')
 			->run($app);
 
-		$this->assertSame("Hello World", $response->getBody());
+		$this->assertSame("Hello World", $response->getContent());
 	}
 }
