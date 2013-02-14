@@ -16,6 +16,10 @@
 		"source": "https://github.com/daveWid/Cog",
 		"issues": "https://github.com/daveWid/Cog/issues"
 	},
+	"require": {
+		"symfony/http-foundation": "2.1.*"
+	},
+
 	"autoload": {
 		"psr-0": {
 			"Cog": "library"
