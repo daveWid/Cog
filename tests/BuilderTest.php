@@ -27,4 +27,5 @@ class BuilderTest extends PHPUnit_Framework_TestCase
 
 		$this->assertSame("Hello World", $response->getContent());
 	}
+
 }

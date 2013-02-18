@@ -9,9 +9,10 @@ class ResponseTest extends PHPUnit_Framework_TestCase
 		$this->response = new \Cog\Response("Hi", 200);
 	}
 
-	public function testContentLengthIsSetAutomatically()
+	public function testAppendingContent()
 	{
-		// Todo - Test this thing...
+		$this->response->appendContent(", this is a request");
+		$this->assertSame('Hi, this is a request', $this->response->getContent());
 	}
 
 }
